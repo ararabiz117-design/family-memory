@@ -74,4 +74,24 @@ void main() {
     expect(find.text('前回どうした？'), findsOneWidget);
     expect(find.byType(NavigationBar), findsOneWidget);
   });
+
+  testWidgets('スマホ幅でも家系図の中心人物と配偶者が重ならず見える', (tester) async {
+    tester.view.physicalSize = const Size(320, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      FamilyMemoryApp(repository: DemoFamilyRepository()),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('家系図'));
+    await tester.pumpAndSettle();
+    final center = tester.getRect(find.text('青葉 直人'));
+    final partner = tester.getRect(find.text('青葉 美咲'));
+    expect(center.left, greaterThanOrEqualTo(0));
+    expect(center.right, lessThanOrEqualTo(320));
+    expect(partner.right, lessThanOrEqualTo(320));
+    expect(center.overlaps(partner), isFalse);
+    expect(tester.takeException(), isNull);
+  });
 }
