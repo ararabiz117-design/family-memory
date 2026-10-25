@@ -1,0 +1,50 @@
+name: family_memory
+description: 家族限定で家系と冠婚葬祭の記憶を共有するFlutterアプリ
+publish_to: none
+version: 0.5.0+5
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  flutter_riverpod: ^3.0.3
+  go_router: ^16.3.0
+  app_links: ^6.4.1
+  flutter_local_notifications: ^19.4.2
+  shared_preferences: ^2.5.3
+  timezone: ^0.10.1
+  crypto: ^3.0.7
+  image: ^4.5.4
+  image_picker: ^1.2.0
+  file_saver: ^0.4.0
+  url_launcher: ^6.3.2
+  supabase_flutter: ^2.10.3
+  google_mlkit_text_recognition: 0.17.1
+  http: ^1.5.0
+  flutter_secure_storage: ^9.2.4
+  web: ^1.1.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+
+flutter:
+  uses-material-design: true
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: assets/branding/app_icon_v1.png
+  remove_alpha_ios: true
+  web:
+    generate: true
+    image_path: assets/branding/app_icon_v1.png
+    background_color: "#FFF8F2"
+    theme_color: "#E36F86"

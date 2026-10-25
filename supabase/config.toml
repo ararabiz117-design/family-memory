@@ -1,0 +1,40 @@
+project_id = "family-memory-local"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+
+[db]
+port = 54322
+major_version = 15
+
+[studio]
+enabled = true
+port = 54323
+
+[inbucket]
+enabled = true
+port = 54324
+
+[auth]
+enabled = true
+site_url = "http://127.0.0.1:8764"
+additional_redirect_urls = ["http://127.0.0.1:8764/**", "familymemory://invite"]
+enable_signup = true
+
+[functions.create-family-invite]
+verify_jwt = true
+[functions.accept-family-invite]
+verify_jwt = true
+[functions.approve-family-member]
+verify_jwt = true
+[functions.request-account-deletion]
+verify_jwt = true
+[functions.request-family-deletion]
+verify_jwt = true
+[functions.export-family-data]
+verify_jwt = true
+[functions.lifecycle-worker]
+verify_jwt = false

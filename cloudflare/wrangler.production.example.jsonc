@@ -1,0 +1,22 @@
+{
+  "name": "family-memory-api",
+  "account_id": "REPLACE_WITH_PERSONAL_ACCOUNT_ID",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "preview_urls": false,
+  "observability": { "enabled": false },
+  "assets": { "directory": "../build/web-production", "binding": "ASSETS", "not_found_handling": "single-page-application", "run_worker_first": ["/api/*"] },
+  "d1_databases": [{ "binding": "DB", "database_name": "family-memory", "database_id": "REPLACE_WITH_FAMILY_MEMORY_DATABASE_ID", "migrations_dir": "migrations" }],
+  "r2_buckets": [{ "binding": "PHOTOS", "bucket_name": "family-memory-private" }],
+  "ai": { "binding": "AI" },
+  "triggers": { "crons": ["20 18 * * *"] },
+  "vars": {
+    "APP_ENV": "production",
+    "PUBLIC_API_URL": "https://family.example.invalid",
+    "APP_ORIGINS": "https://family.example.invalid",
+    "AUTH_RETURN_URLS": "https://family.example.invalid/,familymemory://login-callback/",
+    "AI_ENABLED": "false"
+  }
+}

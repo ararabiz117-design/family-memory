@@ -1,0 +1,20 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "family-memory-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "preview_urls": false,
+  "observability": { "enabled": false },
+  "d1_databases": [{ "binding": "DB", "database_name": "family-memory", "database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "migrations" }],
+  "r2_buckets": [{ "binding": "PHOTOS", "bucket_name": "family-memory-private" }],
+  "triggers": { "crons": ["20 18 * * *"] },
+  "vars": {
+    "APP_ENV": "local",
+    "PUBLIC_API_URL": "http://127.0.0.1:8787",
+    "APP_ORIGINS": "http://127.0.0.1:8765,http://localhost:8765",
+    "AUTH_RETURN_URLS": "http://127.0.0.1:8765/,http://localhost:8765/,familymemory://login-callback/",
+    "AI_ENABLED": "false"
+  }
+}

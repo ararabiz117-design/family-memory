@@ -1,0 +1,5 @@
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+AUTH_SECRET=
+# Copy to .dev.vars and set random AUTH_SECRET (at least 32 characters).
+# Never commit .dev.vars. Local AI stays disabled until intentionally configured.
