@@ -28,6 +28,19 @@ jobs:
                   if (entry.external_attr >> 16) & 0o170000 == 0o120000:
                       raise RuntimeError('Symlink refused')
               archive.extractall('.')
+          from pathlib import Path
+          for entry in archive.infolist():
+              path = Path(entry.filename)
+              if not path.is_file():
+                  continue
+              raw = path.read_bytes()
+              if b'\0' in raw:
+                  continue
+              try:
+                  raw.decode('utf-8')
+              except UnicodeDecodeError:
+                  continue
+              path.write_bytes(raw.replace(b'\r\n', b'\n'))
       - name: Commit source only
         run: |
           git diff --exit-code -- .github/workflows
