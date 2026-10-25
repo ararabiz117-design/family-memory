@@ -20,165 +20,194 @@ class GenogramBoard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final center = people.firstWhere((person) => person.id == centerId);
-    final byId = {for (final person in people) person.id: person};
-    final visible = <String>{centerId};
-    final positions = <String, Offset>{centerId: const Offset(420, 320)};
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final boardWidth = constraints.maxWidth.isFinite
+            ? constraints.maxWidth
+            : 840.0;
+        final nodeWidth = ((boardWidth - 40) / 3).clamp(72.0, 132.0).toDouble();
+        final center = people.firstWhere((person) => person.id == centerId);
+        final byId = {for (final person in people) person.id: person};
+        final visible = <String>{centerId};
+        final positions = <String, Offset>{
+          centerId: Offset(boardWidth / 2, 320),
+        };
 
-    List<String> linked(
-      RelationshipKind kind,
-      bool Function(PersonRelationship) match,
-    ) => relationships
-        .where((edge) => edge.kind == kind && match(edge))
-        .map(
-          (edge) => edge.fromPersonId == centerId
-              ? edge.toPersonId
-              : edge.fromPersonId,
-        )
-        .where(byId.containsKey)
-        .toSet()
-        .toList();
+        List<String> linked(
+          RelationshipKind kind,
+          bool Function(PersonRelationship) match,
+        ) => relationships
+            .where((edge) => edge.kind == kind && match(edge))
+            .map(
+              (edge) => edge.fromPersonId == centerId
+                  ? edge.toPersonId
+                  : edge.fromPersonId,
+            )
+            .where(byId.containsKey)
+            .toSet()
+            .toList();
 
-    final parents = relationships
-        .where(
-          (edge) =>
-              edge.kind == RelationshipKind.parentChild &&
-              edge.toPersonId == centerId,
-        )
-        .map((edge) => edge.fromPersonId)
-        .where(byId.containsKey)
-        .toList();
-    final children = relationships
-        .where(
-          (edge) =>
-              edge.kind == RelationshipKind.parentChild &&
-              edge.fromPersonId == centerId,
-        )
-        .map((edge) => edge.toPersonId)
-        .where(byId.containsKey)
-        .toList();
-    final partners =
-        linked(
-          RelationshipKind.spouse,
-          (edge) =>
-              edge.fromPersonId == centerId || edge.toPersonId == centerId,
-        )..addAll(
-          linked(
-            RelationshipKind.partner,
-            (edge) =>
-                edge.fromPersonId == centerId || edge.toPersonId == centerId,
-          ),
+        final parents = relationships
+            .where(
+              (edge) =>
+                  edge.kind == RelationshipKind.parentChild &&
+                  edge.toPersonId == centerId,
+            )
+            .map((edge) => edge.fromPersonId)
+            .where(byId.containsKey)
+            .toList();
+        final children = relationships
+            .where(
+              (edge) =>
+                  edge.kind == RelationshipKind.parentChild &&
+                  edge.fromPersonId == centerId,
+            )
+            .map((edge) => edge.toPersonId)
+            .where(byId.containsKey)
+            .toList();
+        final partners =
+            linked(
+              RelationshipKind.spouse,
+              (edge) =>
+                  edge.fromPersonId == centerId || edge.toPersonId == centerId,
+            )..addAll(
+              linked(
+                RelationshipKind.partner,
+                (edge) =>
+                    edge.fromPersonId == centerId ||
+                    edge.toPersonId == centerId,
+              ),
+            );
+        final parentIds = parents.toSet();
+        final siblings = relationships
+            .where(
+              (edge) =>
+                  edge.kind == RelationshipKind.parentChild &&
+                  parentIds.contains(edge.fromPersonId) &&
+                  edge.toPersonId != centerId,
+            )
+            .map((edge) => edge.toPersonId)
+            .where(byId.containsKey)
+            .toSet()
+            .toList();
+        final social = relationships
+            .where(
+              (edge) =>
+                  edge.fromPersonId == centerId || edge.toPersonId == centerId,
+            )
+            .where(
+              (edge) => !const {
+                RelationshipKind.parentChild,
+                RelationshipKind.adoptedParentChild,
+                RelationshipKind.stepParentChild,
+                RelationshipKind.spouse,
+                RelationshipKind.partner,
+                RelationshipKind.sibling,
+              }.contains(edge.kind),
+            )
+            .map(
+              (edge) => edge.fromPersonId == centerId
+                  ? edge.toPersonId
+                  : edge.fromPersonId,
+            )
+            .where(byId.containsKey)
+            .toSet()
+            .toList();
+
+        void positionRow(
+          List<String> ids,
+          double y, {
+          double? start,
+          double? span,
+          double? singleX,
+        }) {
+          for (var index = 0; index < ids.length; index++) {
+            final x =
+                (ids.length == 1
+                        ? singleX ?? boardWidth / 2
+                        : (start ?? boardWidth * .26) +
+                              (span ?? boardWidth * .48) *
+                                  index /
+                                  (ids.length - 1))
+                    .toDouble();
+            positions[ids[index]] = Offset(x, y);
+            visible.add(ids[index]);
+          }
+        }
+
+        positionRow(parents, 90);
+        positionRow(
+          siblings,
+          320,
+          start: boardWidth * .16,
+          span: boardWidth * .2,
+          singleX: boardWidth * .16,
         );
-    final parentIds = parents.toSet();
-    final siblings = relationships
-        .where(
-          (edge) =>
-              edge.kind == RelationshipKind.parentChild &&
-              parentIds.contains(edge.fromPersonId) &&
-              edge.toPersonId != centerId,
-        )
-        .map((edge) => edge.toPersonId)
-        .where(byId.containsKey)
-        .toSet()
-        .toList();
-    final social = relationships
-        .where(
-          (edge) =>
-              edge.fromPersonId == centerId || edge.toPersonId == centerId,
-        )
-        .where(
-          (edge) => !const {
-            RelationshipKind.parentChild,
-            RelationshipKind.adoptedParentChild,
-            RelationshipKind.stepParentChild,
-            RelationshipKind.spouse,
-            RelationshipKind.partner,
-            RelationshipKind.sibling,
-          }.contains(edge.kind),
-        )
-        .map(
-          (edge) => edge.fromPersonId == centerId
-              ? edge.toPersonId
-              : edge.fromPersonId,
-        )
-        .where(byId.containsKey)
-        .toSet()
-        .toList();
+        positionRow(children, 550);
+        positionRow(partners.take(1).toList(), 320, singleX: boardWidth * .84);
+        positionRow(
+          social,
+          440,
+          start: boardWidth * .16,
+          span: boardWidth * .68,
+          singleX: boardWidth * .16,
+        );
 
-    void positionRow(
-      List<String> ids,
-      double y, {
-      double start = 220,
-      double span = 400,
-    }) {
-      for (var index = 0; index < ids.length; index++) {
-        final x =
-            (ids.length == 1 ? 420 : start + span * index / (ids.length - 1))
-                .toDouble();
-        positions[ids[index]] = Offset(x, y);
-        visible.add(ids[index]);
-      }
-    }
-
-    positionRow(parents, 90);
-    positionRow(siblings, 320, start: 120, span: 170);
-    positionRow(children, 550);
-    positionRow(partners.take(1).toList(), 320, start: 650, span: 0);
-    positionRow(social, 400, start: 90, span: 690);
-
-    final visibleEdges = relationships
-        .where(
-          (edge) =>
-              visible.contains(edge.fromPersonId) &&
-              visible.contains(edge.toPersonId),
-        )
-        .toList();
-    return SizedBox(
-      height: 670,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: ColoredBox(
-          color: const Color(0xFFFFFBF8),
-          child: InteractiveViewer(
-            minScale: .65,
-            maxScale: 2.4,
-            boundaryMargin: const EdgeInsets.all(100),
-            child: SizedBox(
-              width: 840,
-              height: 650,
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: CustomPaint(
-                      painter: _RelationshipLines(positions, visibleEdges),
-                    ),
-                  ),
-                  for (final id in visible)
-                    if (positions[id] != null)
-                      Positioned(
-                        left: positions[id]!.dx - 66,
-                        top: positions[id]!.dy - 40,
-                        width: 132,
-                        child: _PersonNode(
-                          person: byId[id]!,
-                          isCenter: id == center.id,
-                          onTap: () => onSelect(id),
+        final visibleEdges = relationships
+            .where(
+              (edge) =>
+                  visible.contains(edge.fromPersonId) &&
+                  visible.contains(edge.toPersonId),
+            )
+            .toList();
+        return SizedBox(
+          height: 670,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: ColoredBox(
+              color: const Color(0xFFFFFBF8),
+              child: InteractiveViewer(
+                minScale: .65,
+                maxScale: 2.4,
+                boundaryMargin: const EdgeInsets.all(100),
+                child: SizedBox(
+                  width: boardWidth,
+                  height: 650,
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: CustomPaint(
+                          painter: _RelationshipLines(positions, visibleEdges),
                         ),
                       ),
-                  const Positioned(
-                    left: 18,
-                    top: 16,
-                    child: _GuideLabel(
-                      icon: Icons.zoom_in,
-                      label: '指で拡大・移動できます',
-                    ),
+                      for (final id in visible)
+                        if (positions[id] != null)
+                          Positioned(
+                            left: positions[id]!.dx - nodeWidth / 2,
+                            top: positions[id]!.dy - 40,
+                            width: nodeWidth,
+                            child: _PersonNode(
+                              person: byId[id]!,
+                              isCenter: id == center.id,
+                              onTap: () => onSelect(id),
+                            ),
+                          ),
+                      const Positioned(
+                        left: 18,
+                        top: 16,
+                        child: _GuideLabel(
+                          icon: Icons.zoom_in,
+                          label: '指で拡大・移動できます',
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
