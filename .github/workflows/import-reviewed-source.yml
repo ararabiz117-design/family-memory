@@ -1,0 +1,40 @@
+name: Import reviewed source
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    if: github.repository == 'ararabiz117-design/family-memory'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify reviewed archive
+        run: echo '608315738a050ea7cd40c8fc7d18e50f909a193c22ceda031f690bd7f3e3dcb9  family-memory-source-0.5.0.zip' | sha256sum --check
+      - name: Extract source without accepting unsafe paths
+        shell: python
+        run: |
+          from pathlib import PurePosixPath
+          from zipfile import ZipFile
+          with ZipFile('family-memory-source-0.5.0.zip') as archive:
+              for entry in archive.infolist():
+                  path = PurePosixPath(entry.filename)
+                  if path.is_absolute() or '..' in path.parts or '.git' in path.parts:
+                      raise RuntimeError('Unsafe archive path')
+                  if (entry.external_attr >> 16) & 0o170000 == 0o120000:
+                      raise RuntimeError('Symlink refused')
+              archive.extractall('.')
+      - name: Commit source only
+        run: |
+          git diff --exit-code -- .github/workflows
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm family-memory-source-0.5.0.zip
+          git add .
+          node tool/check_public_source.mjs
+          git commit -m 'Import reviewed Flutter and Cloudflare source fc25332'
+          git push origin HEAD:main
